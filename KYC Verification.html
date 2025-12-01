@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KYC Verification | Blockchain Land Registry</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #1b1e2b;
+  color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 600px;
+  margin: 80px auto;
+  background: #272a3d;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+h1 {
+  color: #ffdf5c;
+  text-align: center;
+  margin-bottom: 20px;
+}
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+}
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: none;
+  background: #333750;
+  color: #f5f5f5;
+}
+button {
+  background: #ffdf5c;
+  color: #222;
+  font-weight: bold;
+  border: none;
+  padding: 12px;
+  margin-top: 20px;
+  width: 100%;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover {
+  background: #fff080;
+}
+.success {
+  background: #1e3b2c;
+  color: #a9ffb0;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  display: none;
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>KYC Verification</h1>
+  <form id="kyc-form">
+    <label>Full Name</label>
+    <input type="text" id="fullName" required>
+
+    <label>Date of Birth</label>
+    <input type="date" id="dob" required>
+
+    <label>Nationality</label>
+    <input type="text" id="nationality" required>
+
+    <label>ID Proof Type</label>
+    <select id="idType" required>
+      <option value="">--Select--</option>
+      <option value="Aadhaar">Aadhaar</option>
+      <option value="Passport">Passport</option>
+      <option value="PAN">PAN Card</option>
+      <option value="Driving License">Driving License</option>
+    </select>
+
+    <label>ID Number</label>
+    <input type="text" id="idNumber" required>
+
+    <label>Address</label>
+    <input type="text" id="address" required>
+
+    <label>Mobile Number</label>
+    <input type="tel" id="mobile" required pattern="[0-9]{10}" maxlength="10">
+
+    <button type="submit">Submit for Verification</button>
+  </form>
+
+  <div class="success" id="successMsg">
+    ✅ KYC verified successfully! Redirecting...
+  </div>
+</div>
+
+<script>
+  
+// Simple KYC verification simulation
+document.getElementById('kyc-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const user = {
+    fullName: document.getElementById('fullName').value,
+    dob: document.getElementById('dob').value,
+    nationality: document.getElementById('nationality').value,
+    idType: document.getElementById('idType').value,
+    idNumber: document.getElementById('idNumber').value,
+    address: document.getElementById('address').value,
+    mobile: document.getElementById('mobile').value,
+    verified: true
+  };
+
+  // Save verified user info
+  localStorage.setItem('kycUser', JSON.stringify(user));
+
+  document.getElementById('successMsg').style.display = 'block';
+
+  // Redirect after short delay
+  setTimeout(() => {
+    window.location.href = "Lands.html";
+  }, 2000);
+});
+</script>
+</body>
+</html>

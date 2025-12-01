@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Buyer Portal | Blockchain Land Registry</title>
+<style>
+  body {
+    background: #212336;
+    color: #fafaff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 900px;
+    margin: auto;
+    background: #292b40;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  h1, h2 { color: #ffe866; }
+  label { display: block; margin-top: 10px; color: #ffda85; font-weight: bold; }
+  textarea, input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: none;
+    background: #35375f;
+    color: white;
+    font-size: 15px;
+  }
+  button {
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: #ffe866;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button:hover { background: #fff698; }
+  #status { margin-top: 15px; color: #88ffb5; font-style: italic; }
+  .hidden { display: none; }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Buyer Portal</h1>
+
+  <!-- Wallet Connection -->
+  <section id="wallet-section">
+    <button id="connect-wallet">Connect MetaMask Wallet</button>
+    <p id="wallet-address">Not connected</p>
+  </section>
+
+  <!-- Land Request Form -->
+  <section id="request-section" class="hidden">
+    <h2>Request to Buy Land</h2>
+    <form id="buy-form">
+      <label for="land-id">Enter Land ID</label>
+      <input type="number" id="land-id" placeholder="e.g., 1" required />
+
+      <label for="buyer-name">Your Name</label>
+      <input type="text" id="buyer-name" placeholder="Enter your name" required />
+
+      <label for="request-terms">Message/Terms</label>
+      <textarea id="request-terms" rows="4" required>
+I kindly request you to approve my land purchase request and accept the terms.
+      </textarea>
+
+      <button type="submit">Send Request</button>
+    </form>
+    <p id="status"></p>
+  </section>
+</div>
+
+<!-- Ethers.js -->
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+<script>
+	// --- KYC verification check ---
+const kycData = JSON.parse(localStorage.getItem('kycUser') || '{}');
+
+if (!kycData.verified) {
+  alert('You must complete KYC verification before continuing.');
+  window.location.href = 'kyc.html';
+} else {
+  console.log('KYC verified user:', kycData.fullName);
+  // optionally show user name on the page
+  document.body.insertAdjacentHTML('afterbegin', `
+    <div style="background:#2c2f45;padding:10px;border-radius:8px;margin-bottom:10px;text-align:center;">
+      ✅ KYC verified: ${kycData.fullName}
+    </div>
+  `);
+}
+// --- Get land ID from URL ---
+const params = new URLSearchParams(window.location.search);
+const selectedLandId = params.get('landId');
+if (selectedLandId) {
+  document.getElementById('land-id').value = selectedLandId;
+}
+
+// ✅ STEP 1: Replace these with your contract details from Remix
+const contractAddress = "0x9Dc004A1430d913e583Df472DbF1caf5A5fa42FC";
+const contractABI =[
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_reqIndex",
+				"type": "uint256"
+			}
+		],
+		"name": "approveRequest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_location",
+				"type": "string"
+			}
+		],
+		"name": "listLand",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_buyerName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_message",
+				"type": "string"
+			}
+		],
+		"name": "requestToBuy",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			}
+		],
+		"name": "unlistLand",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			}
+		],
+		"name": "getLand",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isListed",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct LandRegistry.Land",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getMyLands",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isListed",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct LandRegistry.Land[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			}
+		],
+		"name": "getRequests",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "buyer",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "buyerName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "message",
+						"type": "string"
+					},
+					{
+						"internalType": "bool",
+						"name": "approved",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct LandRegistry.Request[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "landCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "lands",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isListed",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "requests",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "buyer",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "buyerName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+// ✅ STEP 2: MetaMask and Contract Setup
+let provider, signer, contract, account;
+
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert("Please install MetaMask!");
+    return;
+  }
+
+  try {
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer = provider.getSigner();
+    account = await signer.getAddress();
+
+    // connect contract
+    contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+    document.getElementById("wallet-address").textContent = "Wallet: " + account;
+    document.getElementById("connect-wallet").disabled = true;
+    document.getElementById("request-section").classList.remove("hidden");
+    alert("✅ MetaMask connected successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("Connection failed: " + err.message);
+  }
+}
+
+// ✅ STEP 3: Send Buy Request
+document.getElementById("buy-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const status = document.getElementById("status");
+  status.textContent = "Submitting request... ⏳";
+
+  const landId = document.getElementById("land-id").value.trim();
+  const buyerName = document.getElementById("buyer-name").value.trim();
+
+  if (!landId || !buyerName) {
+    alert("Please fill all fields!");
+    return;
+  }
+
+  try {
+    const message = document.getElementById("request-terms").value.trim();
+const tx = await contract.requestToBuy(landId, buyerName, message);
+
+    status.textContent = "⏳ Waiting for blockchain confirmation...";
+    await tx.wait();
+    status.textContent = `✅ Request submitted successfully! TX Hash: ${tx.hash}`;
+alert("Request submitted successfully! Redirecting to Seller Portal...");
+setTimeout(() => {
+  window.location.href = "seller.html"; // redirect after success
+}, 2000);
+  } catch (err) {
+    console.error(err);
+    status.textContent = "❌ Error: " + err.message;
+  }
+});
+
+// ✅ STEP 4: Initialize
+window.onload = () => {
+  document.getElementById("connect-wallet").onclick = connectWallet;
+};
+</script>
+</body>
+</html>

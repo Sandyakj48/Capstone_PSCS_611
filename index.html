@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blockchain Based Land Registration System</title>
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f4f8;
+    }
+
+    /* Header */
+    header {
+        background-color: #1a1f36;
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    header p.static-text {
+        margin: 5px 0 15px 0;
+        font-size: 16px;
+        color: #ffdd57;
+    }
+
+    /* Marquee */
+    .marquee {
+        overflow: hidden;
+        white-space: nowrap;
+        box-sizing: border-box;
+        width: 100%;
+        margin: 5px 0 15px 0;
+    }
+
+    .marquee span {
+        display: inline-block;
+        padding-left: 100%;
+        animation: marquee 15s linear infinite;
+        font-size: 18px;
+        font-weight: bold;
+        background: linear-gradient(90deg, #ff4d4d, #4dff88, #4d94ff, #ffcc00, #ff66ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
+    }
+
+    /* Navbar */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    /* Left vertical nav (small boxes stacked) */
+    .vertical-nav {
+        display: flex;
+        gap: 8px;
+        flex-direction: column;
+    }
+
+    .vertical-nav a {
+        text-decoration: none;
+        color: white;
+        background-color: #3b3f5c;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        text-align: center;
+        transition: 0.3s;
+        min-width: 120px;
+    }
+
+    .vertical-nav a:hover {
+        background-color: #5c5f7a;
+    }
+
+    /* Right horizontal nav (small boxes in a row) */
+    .horizontal-nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .horizontal-nav a {
+    text-decoration: none;
+    color: white;
+    background-color: #3b3f5c;
+    padding: 6px 12px;       /* smaller padding */
+    border-radius: 6px;
+    font-size: 13px;
+    display: flex;           /* flex for vertical centering */
+    align-items: center;
+    justify-content: center;
+    height: 40px;            /* fixed small height */
+    white-space: nowrap;
+    transition: 0.3s;
+}
+
+.horizontal-nav a:hover {
+    background-color: #5c5f7a;
+}
+    /* Main content */
+    main {
+        padding: 30px 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    main h2 {
+        color: #1a1f36;
+        font-size: 22px;
+    }
+
+    main p {
+        font-size: 16px;
+        color: #333;
+    }
+
+    .video-placeholder {
+        width: 100%;
+        height: 300px;
+        background-color: #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #555;
+        border-radius: 10px;
+    }
+
+    .docs {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .docs div {
+        width: 180px;
+        height: 130px;
+        background-color: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-weight: bold;
+        color: #333;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .docs div:hover {
+        background-color: #d0d0d0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .navbar {
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .vertical-nav {
+            flex-direction: row;
+            gap: 6px;
+        }
+        .horizontal-nav {
+            justify-content: center;
+        }
+        .vertical-nav a, .horizontal-nav a {
+            font-size: 12px;
+            padding: 5px 8px;
+        }
+    }
+
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Blockchain Based Land Registration System</h1>
+    <p class="static-text">Secure • Transparent • Reliable</p>
+
+    <div class="marquee">
+        <span>Blockchain Based Land Registration System</span>
+    </div>
+
+    <!-- Navbar with left vertical and right horizontal boxes -->
+    <div class="navbar">
+        <!-- Left vertical -->
+        <div class="vertical-nav">
+            <a href="Buyer Info.html">Buyer Info</a>
+            <a href="Seller Info.html">Seller Info</a>
+            <a href="Government Officer info.html">Government Officer info</a>
+            <a href="KYC Verificationinfo.html">KYC Verification</a>
+        </div>
+
+        <!-- Right horizontal -->
+        <div class="horizontal-nav">
+            <a href="KYC Verification.html">KYC Verification</a>
+            <a href="Lands.html">Lands(seek for lands)</a>
+            <a href="Buyer.html">Buyer (Seeks land ownership)</a>
+            <a href="Seller.html">Seller (Offers land securely)</a>
+            <a href="Government Officer.html">Government Officer (Verifies transaction)</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <h2>How to Register</h2>
+    <p>Follow the instructions below to register your land or buy property securely through our blockchain system.</p>
+
+    <video width="100%" controls>
+  <source src="ScreenRecorderProject5.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+    <h2>Documents</h2>
+    <div class="docs">
+    <div>
+        <a href="Land_Registry_Project_Documentation.docx" target="_blank">📄 Document 1</a>
+    </div>
+</main>
+
+</body>
+</html>

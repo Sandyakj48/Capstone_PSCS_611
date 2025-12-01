@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Seller Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #687970, #f0f4ff);
+      color: #333;
+      text-align: center;
+      padding: 30px;
+    }
+
+    h2 {
+      color: #2c3e50;
+    }
+
+    button {
+      background-color: #171718;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #051220;
+    }
+
+    table {
+      width: 90%;
+      margin: 30px auto;
+      border-collapse: collapse;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background-color: white;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    th {
+      background-color: #2c3034;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    #wallet {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #0c141d;
+    }
+
+    .approved {
+      color: green;
+      font-weight: bold;
+    }
+
+    .pending {
+      color: orange;
+      font-weight: bold;
+    }
+
+    .list-section {
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 60%;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 60%;
+    }
+  </style>
+</head>
+<body>
+  <h2>Seller Dashboard</h2>
+  <button id="connectBtn">Connect Wallet</button>
+  <p id="wallet">Not connected</p>
+
+  <div class="list-section">
+    <h3>List New Land</h3>
+    <input type="text" id="landLocation" placeholder="Enter land location">
+    <button onclick="listNewLand()">List Land</button>
+  </div>
+
+  <h3>Buyer Requests</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Land ID</th>
+        <th>Location</th>
+        <th>Buyer</th>
+        <th>Message</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="reqTable">
+      <tr><td colspan="6">Loading...</td></tr>
+    </tbody>
+  </table>
+
+<script>
+const contractAddress = "0x9Dc004A1430d913e583Df472DbF1caf5A5fa42FC"; // ✅ Make sure this matches your deployed address
+const contractABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_reqIndex",
+				"type": "uint256"
+			}
+		],
+		"name": "approveRequest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_location",
+				"type": "string"
+			}
+		],
+		"name": "listLand",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_buyerName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_message",
+				"type": "string"
+			}
+		],
+		"name": "requestToBuy",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			}
+		],
+		"name": "unlistLand",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			}
+		],
+		"name": "getLand",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isListed",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct LandRegistry.Land",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getMyLands",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isListed",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct LandRegistry.Land[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_landId",
+				"type": "uint256"
+			}
+		],
+		"name": "getRequests",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "buyer",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "buyerName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "message",
+						"type": "string"
+					},
+					{
+						"internalType": "bool",
+						"name": "approved",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct LandRegistry.Request[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "landCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "lands",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isListed",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "requests",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "buyer",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "buyerName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+let provider, signer, contract, account;
+
+// 🟦 Connect Wallet
+document.getElementById("connectBtn").onclick = connectWallet;
+
+async function connectWallet() {
+  try {
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer = provider.getSigner();
+    account = await signer.getAddress();
+    contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+    document.getElementById("wallet").innerText = "Connected: " + account;
+    await loadRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Error connecting to wallet or contract. Check network & address.");
+  }
+}
+
+// 🟩 List new land
+async function listNewLand() {
+  const location = document.getElementById("landLocation").value.trim();
+  if (!location) {
+    alert("Please enter a land location.");
+    return;
+  }
+
+  try {
+    const tx = await contract.listLand(location);
+    await tx.wait();
+    alert("Land listed successfully!");
+    document.getElementById("landLocation").value = "";
+    await loadRequests();
+  } catch (err) {
+    console.error("Error listing land:", err);
+    alert("Error listing land. See console for details.");
+  }
+}
+
+// 🟨 Load buyer requests
+async function loadRequests() {
+  try {
+    const tbody = document.getElementById("reqTable");
+    tbody.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+
+    const landCount = await contract.landCount();
+    tbody.innerHTML = "";
+
+    for (let i = 1; i <= landCount; i++) {
+      const land = await contract.getLand(i);
+      if (land.owner.toLowerCase() !== account.toLowerCase()) continue;
+
+      const requests = await contract.getRequests(i);
+      if (requests.length === 0) continue;
+
+      for (let j = 0; j < requests.length; j++) {
+        const req = requests[j];
+        const statusClass = req.approved ? "approved" : "pending";
+        const statusText = req.approved ? "Approved" : "Pending";
+        const actionBtn = req.approved
+          ? ""
+          : `<button onclick="approve(${i}, ${j})">Approve</button>`;
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${land.id}</td>
+            <td>${land.location}</td>
+            <td>${req.buyerName} (${req.buyer})</td>
+            <td>${req.message}</td>
+            <td class="${statusClass}">${statusText}</td>
+            <td>${actionBtn}</td>
+          </tr>
+        `;
+      }
+    }
+
+    if (tbody.innerHTML.trim() === "") {
+      tbody.innerHTML = "<tr><td colspan='6'>No buyer requests found.</td></tr>";
+    }
+  } catch (err) {
+    console.error("Error loading requests:", err);
+    alert("Error loading requests. Check console.");
+  }
+}
+
+// 🟦 Approve buyer request
+async function approve(landId, reqIndex) {
+  try {
+    const tx = await contract.approveRequest(landId, reqIndex);
+    await tx.wait();
+    alert("Request approved successfully!");
+    window.location.href = "Government Officer.html";
+  } catch (err) {
+    console.error("Error approving request:", err);
+    alert("Transaction failed. Check console for details.");
+  }
+}
+</script>
+</body>
+</html>
